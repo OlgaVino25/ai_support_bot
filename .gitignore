@@ -26,17 +26,18 @@ venv/
 env/
 ENV/
 
-# Environment variables
+# Environment variables and secrets
 .env
 .env.local
 .env.production
-
-# API keys and tokens
 config.json
+config.py
+config.ini
 credentials/
 keys/
 *token*
 *secret*
+webhook_url.txt
 
 # Jupyter Notebook
 .ipynb_checkpoints
@@ -62,6 +63,7 @@ models/
 *.h5
 *.pkl
 *.model
+*.pt
 
 # OS
 .DS_Store
@@ -69,3 +71,7 @@ Thumbs.db
 
 # Telegram session files
 *.session
+
+# Database files (SQLite)
+*.db
+*.sqlite3
