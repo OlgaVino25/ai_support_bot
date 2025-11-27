@@ -1,10 +1,10 @@
-from environs import Env
+import asyncio
 import os
 
+from environs import Env
 from aiogram import Bot, Dispatcher
 from aiogram.filters import Command
 from google.cloud import dialogflow
-import asyncio
 
 import handlers as h
 

@@ -1,6 +1,6 @@
-from environs import Env
 import os
 
+from environs import Env
 from aiogram import types
 from google.cloud import dialogflow
 
