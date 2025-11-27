@@ -39,6 +39,10 @@ keys/
 *secret*
 webhook_url.txt
 
+credentials.json
+*.jsonkey
+*.p12
+
 # Jupyter Notebook
 .ipynb_checkpoints
 
