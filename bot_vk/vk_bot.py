@@ -1,4 +1,6 @@
 import os
+import sys
+from pathlib import Path
 
 from environs import Env
 
@@ -8,13 +10,15 @@ from vk_api.longpoll import VkLongPoll, VkEventType
 import vk_handlers as vk_h
 
 
+BASE_DIR = Path(__file__).parent.parent
+sys.path.append(str(BASE_DIR))
+
 if __name__ == "__main__":
     env = Env()
     env.read_env()
 
-    os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = env.str(
-        "GOOGLE_APPLICATION_CREDENTIALS", "credentials.json"
-    )
+    credentials_path = BASE_DIR / "credentials.json"
+    os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = str(credentials_path)
 
     vk_token = env.str("VK_GROUP_TOKEN")
     vk_session = vk.VkApi(token=vk_token)

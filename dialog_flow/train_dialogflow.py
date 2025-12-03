@@ -1,17 +1,14 @@
 import os
+import sys
 import json
 import asyncio
+from pathlib import Path
 from environs import Env
 from google.cloud import dialogflow
 
 
-env = Env()
-env.read_env()
-
-project_id = env.str("PROJECT_ID")
-os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = env.str(
-    "GOOGLE_APPLICATION_CREDENTIALS", "credentials.json"
-)
+BASE_DIR = Path(__file__).parent.parent
+sys.path.append(str(BASE_DIR))
 
 
 async def create_intent(
@@ -46,7 +43,8 @@ async def create_intent(
 async def train_from_json():
     """Обучает DialogFlow из JSON файла."""
     try:
-        with open("dialog_flow\phrases.json", "r", encoding="UTF-8") as file:
+        phrases_path = Path(__file__).parent / "phrases.json"
+        with open(phrases_path, "r", encoding="UTF-8") as file:
             intents_data = json.load(file)
 
         for display_name, data in intents_data.items():
@@ -89,6 +87,14 @@ def list_intents():
 
 
 if __name__ == "__main__":
+    env = Env()
+    env.read_env()
+
+    project_id = env.str("PROJECT_ID")
+
+    credentials_path = BASE_DIR / "credentials.json"
+    os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = str(credentials_path)
+
     print("Текущие интенты в DialogFlow:")
     list_intents()
     print("\n" + "=" * 50 + "\n")

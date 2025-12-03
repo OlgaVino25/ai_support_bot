@@ -1,13 +1,13 @@
-import os
-
 from environs import Env
 from aiogram import types
 from google.cloud import dialogflow
+
 
 env = Env()
 env.read_env()
 
 project_id = env.str("PROJECT_ID")
+
 
 async def start(message: types.Message):
     await message.answer(
@@ -23,7 +23,7 @@ async def echo(message: types.Message):
         session_client = dialogflow.SessionsClient()
         session = session_client.session_path(project_id, f"tg-{user_id}")
 
-        text_input = dialogflow.TextInput(text=user_text, language_code='ru')
+        text_input = dialogflow.TextInput(text=user_text, language_code="ru")
         query_input = dialogflow.QueryInput(text=text_input)
 
         response = session_client.detect_intent(
