@@ -6,7 +6,7 @@ from aiogram import Bot, Dispatcher
 from aiogram.filters import Command
 from google.cloud import dialogflow
 
-import handlers as h
+import tg_handlers as tg_h
 
 
 env = Env()
@@ -22,8 +22,8 @@ os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = env.str(
 bot = Bot(token=token)
 dp = Dispatcher()
 
-dp.message.register(h.start, Command(commands=["start"]))
-dp.message.register(h.echo)
+dp.message.register(tg_h.start, Command(commands=["start"]))
+dp.message.register(tg_h.echo)
 
 
 async def main():
