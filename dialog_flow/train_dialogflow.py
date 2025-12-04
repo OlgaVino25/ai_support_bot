@@ -1,14 +1,19 @@
 import os
 import sys
-import json
-import asyncio
 from pathlib import Path
-from environs import Env
-from google.cloud import dialogflow
-
 
 BASE_DIR = Path(__file__).parent.parent
-sys.path.append(str(BASE_DIR))
+sys.path.insert(0, str(BASE_DIR))
+
+import json
+import asyncio
+from google.cloud import dialogflow
+
+from settings import (
+    PHRASES_PATH,
+    PROJECT_ID,
+    GOOGLE_APPLICATION_CREDENTIALS,
+)
 
 
 async def create_intent(
@@ -43,8 +48,7 @@ async def create_intent(
 async def train_from_json():
     """Обучает DialogFlow из JSON файла."""
     try:
-        phrases_path = Path(__file__).parent / "phrases.json"
-        with open(phrases_path, "r", encoding="UTF-8") as file:
+        with open(PHRASES_PATH, "r", encoding="UTF-8") as file:
             intents_data = json.load(file)
 
         for display_name, data in intents_data.items():
@@ -53,7 +57,7 @@ async def train_from_json():
 
             print(f"Создаю интент: {display_name}")
             await create_intent(
-                project_id=project_id,
+                project_id=PROJECT_ID,
                 display_name=display_name,
                 training_phrases_parts=questions,
                 message_texts=[answer],
@@ -72,28 +76,25 @@ async def train_from_json():
 
 def list_intents():
     """Выводит список существующих интентов."""
-    intents_client = dialogflow.IntentsClient()
-    parent = dialogflow.AgentsClient.agent_path(project_id)
+    try:
+        intents_client = dialogflow.IntentsClient()
+        parent = dialogflow.AgentsClient.agent_path(PROJECT_ID)
 
-    intents = intents_client.list_intents(request={"parent": parent})
+        intents = intents_client.list_intents(request={"parent": parent})
 
-    print("Существующие интенты:")
-    print("=" * 50)
-    for intent in intents:
-        print(f"Имя: {intent.display_name}")
-        print(f"ID: {intent.name}")
-        print(f"Количество тренировочных фраз: {len(intent.training_phrases)}")
-        print("-" * 30)
+        print("Существующие интенты:")
+        print("=" * 50)
+        for intent in intents:
+            print(f"Имя: {intent.display_name}")
+            print(f"ID: {intent.name}")
+            print(f"Количество тренировочных фраз: {len(intent.training_phrases)}")
+            print("-" * 30)
+    except Exception as e:
+        print(f"Ошибка при получении списка интентов: {e}")
 
 
 if __name__ == "__main__":
-    env = Env()
-    env.read_env()
-
-    project_id = env.str("PROJECT_ID")
-
-    credentials_path = BASE_DIR / "credentials.json"
-    os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = str(credentials_path)
+    os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = GOOGLE_APPLICATION_CREDENTIALS
 
     print("Текущие интенты в DialogFlow:")
     list_intents()

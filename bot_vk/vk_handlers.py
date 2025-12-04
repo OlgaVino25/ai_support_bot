@@ -1,14 +1,12 @@
 import random
-
-from environs import Env
+import logging
 
 from google.cloud import dialogflow
 
+from settings import PROJECT_ID
 
-env = Env()
-env.read_env()
 
-project_id = env.str("PROJECT_ID")
+logger = logging.getLogger(__name__)
 
 
 def echo(event, vk_api):
@@ -18,7 +16,7 @@ def echo(event, vk_api):
         session_id = f"vk-{user_id}"
 
         session_client = dialogflow.SessionsClient()
-        session = session_client.session_path(project_id, session_id)
+        session = session_client.session_path(PROJECT_ID, session_id)
 
         text_input = dialogflow.TextInput(text=event.text, language_code="ru")
         query_input = dialogflow.QueryInput(text=text_input)
@@ -38,9 +36,12 @@ def echo(event, vk_api):
             random_id=random.randint(1, 1000),
         )
     except Exception as e:
-        print(f"Error in VK handler: {e}")
-        vk_api.messages.send(
-            user_id=event.user_id,
-            message="Извините, произошла ошибка при обработке вашего сообщения.",
-            random_id=random.randint(1, 1000),
-        )
+        logger.error(f"Error in VK handler: {e}")
+        try:
+            vk_api.messages.send(
+                user_id=event.user_id,
+                message="Извините, произошла ошибка при обработке вашего сообщения.",
+                random_id=random.randint(1, 1000),
+            )
+        except Exception as send_error:
+            logger.error(f"Не удалось отправить сообщение об ошибке: {send_error}")

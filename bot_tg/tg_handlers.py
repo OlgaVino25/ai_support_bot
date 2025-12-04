@@ -1,12 +1,12 @@
-from environs import Env
+import logging
+
 from aiogram import types
 from google.cloud import dialogflow
 
+from settings import PROJECT_ID
 
-env = Env()
-env.read_env()
 
-project_id = env.str("PROJECT_ID")
+logger = logging.getLogger(__name__)
 
 
 async def start(message: types.Message):
@@ -21,7 +21,7 @@ async def echo(message: types.Message):
         user_id = message.from_user.id
 
         session_client = dialogflow.SessionsClient()
-        session = session_client.session_path(project_id, f"tg-{user_id}")
+        session = session_client.session_path(PROJECT_ID, f"tg-{user_id}")
 
         text_input = dialogflow.TextInput(text=user_text, language_code="ru")
         query_input = dialogflow.QueryInput(text=text_input)
@@ -35,7 +35,4 @@ async def echo(message: types.Message):
         await message.answer(bot_response)
 
     except Exception as e:
-        print(f"Error: {e}")
-        await message.answer(
-            "Извините, произошла ошибка при обработке вашего сообщения."
-        )
+        logger.error(f"Error: {e}")
