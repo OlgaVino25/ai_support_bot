@@ -27,6 +27,9 @@ def echo(event, vk_api):
             request={"session": session, "query_input": query_input}
         )
 
+        if response.query_result.intent.is_fallback:
+            return
+
         dialogflow_response = response.query_result.fulfillment_text
 
         vk_api.messages.send(
