@@ -14,7 +14,7 @@ from settings import (
     ADMIN_CHAT_ID,
     GOOGLE_APPLICATION_CREDENTIALS,
 )
-from bot_tg import tg_handlers as tg_h
+import tg_handlers as tg_h
 from logger import setup_logging
 
 

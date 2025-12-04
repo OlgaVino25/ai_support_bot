@@ -16,7 +16,7 @@ from settings import (
     TELEGRAM_TOKEN,
     ADMIN_CHAT_ID,
 )
-from bot_vk import vk_handlers as vk_h
+import vk_handlers as vk_h
 from logger import setup_logging
 
 
