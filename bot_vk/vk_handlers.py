@@ -41,13 +41,5 @@ def echo(event, vk_api):
             message=dialogflow_response,
             random_id=random.randint(1, 1000),
         )
-    except Exception as e:
-        logger.error(f"Error in VK handler: {e}")
-        try:
-            vk_api.messages.send(
-                user_id=event.user_id,
-                message="Извините, произошла ошибка при обработке вашего сообщения.",
-                random_id=random.randint(1, 1000),
-            )
-        except Exception as send_error:
-            logger.error(f"Не удалось отправить сообщение об ошибке: {send_error}")
+    except Exception as err:
+        logger.exception("Ошибка в VK обработчике")

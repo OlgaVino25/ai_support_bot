@@ -40,5 +40,5 @@ async def echo(message: types.Message):
 
         await message.answer(bot_response)
 
-    except Exception as e:
-        logger.error(f"Error: {e}")
+    except Exception as err:
+        logger.exception("Ошибка в Telegram обработчике")

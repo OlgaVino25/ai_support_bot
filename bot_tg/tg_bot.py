@@ -11,11 +11,10 @@ from aiogram.filters import Command
 
 from settings import (
     TELEGRAM_TOKEN,
-    ADMIN_CHAT_ID,
     GOOGLE_APPLICATION_CREDENTIALS,
 )
 import tg_handlers as tg_h
-from logger import setup_logging
+from logger import logger
 
 
 async def main():
@@ -23,13 +22,17 @@ async def main():
 
     bot = Bot(token=TELEGRAM_TOKEN)
     dp = Dispatcher()
-    logger = setup_logging(bot, ADMIN_CHAT_ID)
 
     dp.message.register(tg_h.start, Command(commands=["start"]))
     dp.message.register(tg_h.echo)
-    await dp.start_polling(bot)
+    try:
+        await dp.start_polling(bot)
+    except Exception as e:
+        logger.exception("Непредвиденная ошибка в Telegram боте")
+        raise
 
 
 if __name__ == "__main__":
-    print("Бот запущен. Для обучения DialogFlow запустите отдельно train_dialogflow.py")
+    logger.info("Бот запущен")
     asyncio.run(main())
+

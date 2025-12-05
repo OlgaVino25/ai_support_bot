@@ -1,75 +1,76 @@
-import asyncio
 import logging
-from aiogram import Bot
-from typing import Optional
+import traceback
+import requests
+from settings import TELEGRAM_TOKEN, ADMIN_CHAT_ID
 
 
-class TelegramLogsHandler(logging.Handler):
-    """Кастомный обработчик для отправки логов в Telegram"""
-
-    def __init__(self, bot, chat_id):
-        super().__init__()
-        self.bot = bot
-        self.chat_id = chat_id
-        self._loop: Optional[asyncio.AbstractEventLoop] = None
+class TelegramErrorsHandler(logging.Handler):
 
     def emit(self, record):
-        log_entry = self.format(record)
+        if record.levelno < logging.WARNING:
+            return
+
+        if not TELEGRAM_TOKEN or not ADMIN_CHAT_ID:
+            return
 
         try:
-            loop = asyncio.get_event_loop()
-        except RuntimeError:
-            loop = asyncio.new_event_loop()
-            asyncio.set_event_loop(loop)
+            msg = f"Ошибка в боте\n\n"
+            msg += f"Время: {record.asctime}\n"
+            msg += f"Уровень: {record.levelname}\n"
+            msg += f"Модуль: {record.module}\n"
+            msg += f"Сообщение: {record.getMessage()}\n"
 
-        if loop.is_running():
-            asyncio.create_task(self._send_log_async(log_entry))
-        else:
-            loop.run_until_complete(self._send_log_async(log_entry))
+            if record.exc_info:
+                exc_type, exc_value, exc_tb = record.exc_info
+                tb_text = "".join(
+                    traceback.format_exception(exc_type, exc_value, exc_tb)
+                )
 
-    async def _send_log_async(self, message: str):
-        try:
-            await self.bot.send_message(chat_id=self.chat_id, text=message[:4000])
+                if len(tb_text) > 1000:
+                    tb_text = tb_text[-1000:]
+                msg += f"\nТрейсбек:\n{tb_text}"
+
+            self._send_to_telegram(msg)
+
         except Exception as e:
             print(f"Не удалось отправить лог в Telegram: {e}")
-            print(f"Текст лога: {message[:500]}")
+
+    def _send_to_telegram(self, msg):
+        """Синхронная отправка сообщения через Telegram Bot API"""
+        url = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage"
+
+        payload = {"chat_id": ADMIN_CHAT_ID, "text": msg}
+        try:
+            response = requests.post(url, json=payload, timeout=10)
+            if response.status_code != 200:
+                print(f"⚠️ Не удалось отправить сообщение в Telegram: {response.text}")
+        except Exception as e:
+            print(f"❌ Не удалось отправить сообщение в Telegram: {e}")
 
 
-def setup_logging(bot, admin_chat_id):
-    """Настраивает систему логирования"""
+def setup_logging():
     logger = logging.getLogger()
-    logger.setLevel(logging.INFO)
+    logger.setLevel(logging.DEBUG)
 
     logger.handlers.clear()
 
-    # Обработчик для Telegram
-    telegram_handler = TelegramLogsHandler(bot, admin_chat_id)
-    telegram_handler.setLevel(logging.WARNING)
-    telegram_formatter = logging.Formatter(
-        "*%(levelname)s*\n\n"
-        "*Сообщение*: %(message)s\n"
-        "*Время*: %(asctime)s\n"
-        "*Файл*: %(filename)s\n"
-        "*Строка*: %(lineno)d\n"
-        "*Модуль*: %(module)s",
-        datefmt="%Y-%m-%d %H:%M:%S",
-    )
-    telegram_handler.setFormatter(telegram_formatter)
-    logger.addHandler(telegram_handler)
-
-    # Обработчик для консоли
+    # Для консоли
     console_handler = logging.StreamHandler()
-    console_handler.setLevel(logging.INFO)
-    console_formatter = logging.Formatter(
-        "%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-        datefmt="%Y-%m-%d %H:%M:%S",
+    console_handler.setLevel(logging.DEBUG)
+    console_format = logging.Formatter(
+        "%(asctime)s - %(process)d - %(levelname)s - %(pathname)s - %(lineno)d - %(message)s",
+        datefmt="%H:%M:%S",
     )
-    console_handler.setFormatter(console_formatter)
+    console_handler.setFormatter(console_format)
     logger.addHandler(console_handler)
 
-    # Логирование для библиотек
-    logging.getLogger("aiogram").setLevel(logging.WARNING)
-    logging.getLogger("google").setLevel(logging.WARNING)
-    logging.getLogger("vk_api").setLevel(logging.WARNING)
+    # Для Telegram
+    if TELEGRAM_TOKEN and ADMIN_CHAT_ID:
+        telegram_handler = TelegramErrorsHandler()
+        telegram_handler.setLevel(logging.WARNING)
+        logger.addHandler(telegram_handler)
 
     return logger
+
+
+logger = setup_logging()
