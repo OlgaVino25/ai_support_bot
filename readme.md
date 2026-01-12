@@ -5,11 +5,19 @@
 ### Посмотреть примеры работающих ботов:
 
 **Для Telegram бота:**
+
 @Context_Assistant_Bot
 
+![бот тг](https://github.com/user-attachments/assets/38efd578-0815-420d-8f02-7dc886329a9c)
+
+
 **Для VK бота:**
+
 [Test Group](https://vk.com/im/convo/-234376389)
 Отправьте сообщение в беседу
+
+![бот вк](https://github.com/user-attachments/assets/c1714482-98be-427c-989b-353643abc0c3)
+
 
 *Тестовые фразы для проверки:*
 - "Как устроиться к вам на работу?"
