@@ -9,8 +9,6 @@ import logging
 from aiogram import types
 from google.cloud import dialogflow
 
-from settings import PROJECT_ID
-
 
 logger = logging.getLogger(__name__)
 
@@ -22,23 +20,20 @@ async def start(message: types.Message):
 
 
 async def echo(message, project_id):
-    try:
-        user_text = message.text
-        user_id = message.from_user.id
 
-        session_client = dialogflow.SessionsClient()
-        session = session_client.session_path(project_id, f"tg-{user_id}")
+    user_text = message.text
+    user_id = message.from_user.id
 
-        text_input = dialogflow.TextInput(text=user_text, language_code="ru")
-        query_input = dialogflow.QueryInput(text=text_input)
+    session_client = dialogflow.SessionsClient()
+    session = session_client.session_path(project_id, f"tg-{user_id}")
 
-        response = session_client.detect_intent(
-            request={"session": session, "query_input": query_input}
-        )
+    text_input = dialogflow.TextInput(text=user_text, language_code="ru")
+    query_input = dialogflow.QueryInput(text=text_input)
 
-        bot_response = response.query_result.fulfillment_text
+    response = session_client.detect_intent(
+        request={"session": session, "query_input": query_input}
+    )
 
-        await message.answer(bot_response)
+    bot_response = response.query_result.fulfillment_text
 
-    except Exception as err:
-        logger.exception("Ошибка в Telegram обработчике")
+    await message.answer(bot_response)

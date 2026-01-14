@@ -23,11 +23,17 @@ from logger import setup_logging
 logger = logging.getLogger(__name__)
 
 
+def echo_with_error_handling(event, vk_api, project_id):
+    """Для обработки исключений в echo"""
+    try:
+        vk_h.echo(event, vk_api, project_id)
+    except Exception as err:
+        logger.exception("Ошибка в VK обработчике")
+
+
 def main():
     setup_logging(
-        telegram_token=TELEGRAM_TOKEN,
-        admin_chat_id=ADMIN_CHAT_ID,
-        logger_instance=None
+        telegram_token=TELEGRAM_TOKEN, admin_chat_id=ADMIN_CHAT_ID, logger_instance=None
     )
 
     os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = GOOGLE_APPLICATION_CREDENTIALS
@@ -40,7 +46,7 @@ def main():
         logger.info("VK бот запущен")
         for event in longpoll.listen():
             if event.type == VkEventType.MESSAGE_NEW and event.to_me:
-                vk_h.echo(event, vk_api, PROJECT_ID)
+                echo_with_error_handling(event, vk_api, PROJECT_ID)
     except KeyboardInterrupt:
         logger.warning("VK бот остановлен пользователем (Ctrl+C)")
         print("\nVK бот остановлен")

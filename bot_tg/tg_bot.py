@@ -6,6 +6,7 @@ from pathlib import Path
 BASE_DIR = Path(__file__).parent.parent
 sys.path.insert(0, str(BASE_DIR))
 
+import functools
 import asyncio
 from aiogram import Bot, Dispatcher
 from aiogram.filters import Command
@@ -23,15 +24,17 @@ from logger import setup_logging
 logger = logging.getLogger(__name__)
 
 
-async def echo_wrapper(message):
-    await tg_h.echo(message, PROJECT_ID)
+async def echo_with_error_handling(message, project_id):
+    """Для обработки исключений в echo"""
+    try:
+        await tg_h.echo(message, project_id)
+    except Exception as err:
+        logger.exception("Ошибка в Telegram обработчике")
 
 
 async def main():
     setup_logging(
-        telegram_token=TELEGRAM_TOKEN,
-        admin_chat_id=ADMIN_CHAT_ID,
-        logger_instance=None
+        telegram_token=TELEGRAM_TOKEN, admin_chat_id=ADMIN_CHAT_ID, logger_instance=None
     )
 
     os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = GOOGLE_APPLICATION_CREDENTIALS
@@ -40,7 +43,9 @@ async def main():
     dp = Dispatcher()
 
     dp.message.register(tg_h.start, Command(commands=["start"]))
-    dp.message.register(echo_wrapper)
+    dp.message.register(
+        functools.partial(echo_with_error_handling, project_id=PROJECT_ID)
+    )
     try:
         await dp.start_polling(bot)
     except Exception as e:

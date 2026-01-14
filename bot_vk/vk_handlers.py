@@ -9,37 +9,32 @@ sys.path.insert(0, str(BASE_DIR))
 
 from google.cloud import dialogflow
 
-from settings import PROJECT_ID
-
 
 logger = logging.getLogger(__name__)
 
 
 def echo(event, vk_api, project_id):
     """Обработка сообщений VK с использованием DialogFlow"""
-    try:
-        user_id = event.user_id if event.user_id != 0 else event.peer_id
-        session_id = f"vk-{user_id}"
+    user_id = event.user_id if event.user_id != 0 else event.peer_id
+    session_id = f"vk-{user_id}"
 
-        session_client = dialogflow.SessionsClient()
-        session = session_client.session_path(project_id, session_id)
+    session_client = dialogflow.SessionsClient()
+    session = session_client.session_path(project_id, session_id)
 
-        text_input = dialogflow.TextInput(text=event.text, language_code="ru")
-        query_input = dialogflow.QueryInput(text=text_input)
+    text_input = dialogflow.TextInput(text=event.text, language_code="ru")
+    query_input = dialogflow.QueryInput(text=text_input)
 
-        response = session_client.detect_intent(
-            request={"session": session, "query_input": query_input}
-        )
+    response = session_client.detect_intent(
+        request={"session": session, "query_input": query_input}
+    )
 
-        if response.query_result.intent.is_fallback:
-            return
+    if response.query_result.intent.is_fallback:
+        return
 
-        dialogflow_response = response.query_result.fulfillment_text
+    dialogflow_response = response.query_result.fulfillment_text
 
-        vk_api.messages.send(
-            user_id=event.user_id,
-            message=dialogflow_response,
-            random_id=random.randint(1, 1000),
-        )
-    except Exception as err:
-        logger.exception("Ошибка в VK обработчике")
+    vk_api.messages.send(
+        user_id=event.user_id,
+        message=dialogflow_response,
+        random_id=random.randint(1, 1000),
+    )

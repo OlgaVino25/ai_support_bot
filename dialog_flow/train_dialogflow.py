@@ -26,34 +26,31 @@ logger = logging.getLogger(__name__)
 async def create_intent(
     project_id, display_name, training_phrases_parts, message_texts
 ):
-    try:
-        intents_client = dialogflow.IntentsClient()
-        parent = dialogflow.AgentsClient.agent_path(project_id)
 
-        training_phrases = []
+    intents_client = dialogflow.IntentsClient()
+    parent = dialogflow.AgentsClient.agent_path(project_id)
 
-        for training_phrases_part in training_phrases_parts:
-            part = dialogflow.Intent.TrainingPhrase.Part(text=training_phrases_part)
-            training_phrase = dialogflow.Intent.TrainingPhrase(parts=[part])
-            training_phrases.append(training_phrase)
+    training_phrases = []
 
-        text = dialogflow.Intent.Message.Text(text=message_texts)
-        message = dialogflow.Intent.Message(text=text)
+    for training_phrases_part in training_phrases_parts:
+        part = dialogflow.Intent.TrainingPhrase.Part(text=training_phrases_part)
+        training_phrase = dialogflow.Intent.TrainingPhrase(parts=[part])
+        training_phrases.append(training_phrase)
 
-        intent = dialogflow.Intent(
-            display_name=display_name,
-            training_phrases=training_phrases,
-            messages=[message],
-        )
+    text = dialogflow.Intent.Message.Text(text=message_texts)
+    message = dialogflow.Intent.Message(text=text)
 
-        response = intents_client.create_intent(
-            request={"parent": parent, "intent": intent}
-        )
+    intent = dialogflow.Intent(
+        display_name=display_name,
+        training_phrases=training_phrases,
+        messages=[message],
+    )
 
-        return True
-    except Exception as e:
-        logger.error(f"Ошибка при создании интента {display_name}: {e}")
-        raise
+    response = intents_client.create_intent(
+        request={"parent": parent, "intent": intent}
+    )
+
+    return True
 
 
 async def train_from_json(phrases_path, project_id):
