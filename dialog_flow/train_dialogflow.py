@@ -53,7 +53,7 @@ async def create_intent(
     return True
 
 
-async def train_from_json(phrases_path, project_id):
+def train_from_json(phrases_path, project_id):
     """Обучает DialogFlow из JSON файла."""
     with open(phrases_path, "r", encoding="UTF-8") as file:
         intents_data = json.load(file)
@@ -65,7 +65,7 @@ async def train_from_json(phrases_path, project_id):
         questions = data["questions"]
         answer = data["answer"]
 
-        success = await create_intent(
+        success = create_intent(
             project_id=project_id,
             display_name=display_name,
             training_phrases_parts=questions,
@@ -135,7 +135,7 @@ async def main():
     print("\nНачинаю обучение DialogFlow...")
 
     try:
-        created_count, failed_count = await train_from_json(
+        created_count, failed_count = train_from_json(
             phrases_path=PHRASES_PATH, project_id=PROJECT_ID
         )
 
