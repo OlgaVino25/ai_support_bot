@@ -55,62 +55,51 @@ async def create_intent(
 
 async def train_from_json(phrases_path, project_id):
     """Обучает DialogFlow из JSON файла."""
-    try:
-        with open(phrases_path, "r", encoding="UTF-8") as file:
-            intents_data = json.load(file)
+    with open(phrases_path, "r", encoding="UTF-8") as file:
+        intents_data = json.load(file)
 
-        created_count = 0
-        failed_count = 0
+    failed_count = 0
+    created_count = 0
 
-        for display_name, data in intents_data.items():
-            questions = data["questions"]
-            answer = data["answer"]
+    for display_name, data in intents_data.items():
+        questions = data["questions"]
+        answer = data["answer"]
 
-            success = await create_intent(
-                project_id=project_id,
-                display_name=display_name,
-                training_phrases_parts=questions,
-                message_texts=[answer],
-            )
+        success = await create_intent(
+            project_id=project_id,
+            display_name=display_name,
+            training_phrases_parts=questions,
+            message_texts=[answer],
+        )
 
-            if success:
-                created_count += 1
-            else:
-                failed_count += 1
-
-        return created_count, failed_count
-
-    except FileNotFoundError:
-        raise FileNotFoundError(f"Файл не найден: {PHRASES_PATH}")
-    except KeyError as e:
-        raise KeyError(f"Ошибка в структуре JSON: отсутствует ключ {e}")
-    except Exception as e:
-        raise Exception(f"Произошла ошибка при обучении: {e}")
+        if success:
+            created_count += 1
+        else:
+            failed_count += 1
+    return created_count, failed_count
 
 
 def list_intents(project_id):
     """Выводит список существующих интентов."""
-    try:
-        intents_client = dialogflow.IntentsClient()
-        parent = dialogflow.AgentsClient.agent_path(project_id)
+    intents_client = dialogflow.IntentsClient()
+    parent = dialogflow.AgentsClient.agent_path(project_id)
 
-        intents = intents_client.list_intents(request={"parent": parent})
+    intents = intents_client.list_intents(request={"parent": parent})
 
-        intents_list = []
+    intents_list = []
 
-        for intent in intents:
-            intents_list.append(
-                {
-                    "name": intent.display_name,
-                    "id": intent.name,
-                    "training_phrases_count": len(intent.training_phrases),
-                }
-            )
+    for intent in intents:
+        intents_list.append(
+            {
+                "name": intent.display_name,
+                "id": intent.name,
+                "training_phrases_count": len(intent.training_phrases),
+            }
+        )
 
-        return intents_list
+    return intents_list
 
-    except Exception as e:
-        raise Exception(f"Ошибка при получении списка интентов: {e}")
+
 
 
 async def main():
