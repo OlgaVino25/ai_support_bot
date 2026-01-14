@@ -63,17 +63,15 @@ def setup_logging(logger_instance=None):
     logger_instance.setLevel(logging.DEBUG)
     logger_instance.handlers.clear()
 
-    # Для консоли
     console_handler = logging.StreamHandler()
     console_handler.setLevel(logging.DEBUG)
     console_format = logging.Formatter(
-        "%(name)s - %(asctime)s - %(process)d - %(levelname)s - %(pathname)s - %(lineno)d - %(message)s",
+        "%(asctime)s - %(name)s - %(process)d - %(levelname)s - %(pathname)s - %(lineno)d - %(message)s",
         datefmt="%H:%M:%S",
     )
     console_handler.setFormatter(console_format)
     logger.addHandler(console_handler)
 
-    # Для Telegram
     if TELEGRAM_TOKEN and ADMIN_CHAT_ID:
         telegram_handler = TelegramErrorsHandler()
         telegram_handler.setLevel(logging.WARNING)
