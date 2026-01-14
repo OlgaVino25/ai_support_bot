@@ -20,8 +20,8 @@ from logger import setup_logging
 logger = logging.getLogger(__name__)
 
 
-if __name__ == "__main__":
-    setup_logging(logger)
+def main():
+    setup_logging()
 
     os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = GOOGLE_APPLICATION_CREDENTIALS
 
@@ -30,6 +30,7 @@ if __name__ == "__main__":
     longpoll = VkLongPoll(vk_session)
 
     try:
+        logger.info("VK бот запущен")
         for event in longpoll.listen():
             if event.type == VkEventType.MESSAGE_NEW and event.to_me:
                 vk_h.echo(event, vk_api)
@@ -39,3 +40,7 @@ if __name__ == "__main__":
     except Exception as e:
         logger.exception("Непредвиденная ошибка в VK боте")
         raise
+
+
+if __name__ == "__main__":
+    main()

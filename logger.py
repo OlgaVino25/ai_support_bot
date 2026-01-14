@@ -70,11 +70,11 @@ def setup_logging(logger_instance=None):
         datefmt="%H:%M:%S",
     )
     console_handler.setFormatter(console_format)
-    logger.addHandler(console_handler)
+    logger_instance.addHandler(console_handler)
 
     if TELEGRAM_TOKEN and ADMIN_CHAT_ID:
         telegram_handler = TelegramErrorsHandler()
         telegram_handler.setLevel(logging.WARNING)
-        logger.addHandler(telegram_handler)
+        logger_instance.addHandler(telegram_handler)
 
     return logger_instance

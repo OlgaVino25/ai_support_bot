@@ -22,7 +22,7 @@ logger = logging.getLogger(__name__)
 
 
 async def main():
-    setup_logging(logger)
+    setup_logging()
     
     os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = GOOGLE_APPLICATION_CREDENTIALS
 
