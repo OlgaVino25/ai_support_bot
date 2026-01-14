@@ -12,6 +12,8 @@ from vk_api.longpoll import VkLongPoll, VkEventType
 from settings import (
     VK_TOKEN,
     GOOGLE_APPLICATION_CREDENTIALS,
+    TELEGRAM_TOKEN,
+    ADMIN_CHAT_ID,
 )
 import vk_handlers as vk_h
 from logger import setup_logging
@@ -21,7 +23,11 @@ logger = logging.getLogger(__name__)
 
 
 def main():
-    setup_logging()
+    setup_logging(
+        telegram_token=TELEGRAM_TOKEN,
+        admin_chat_id=ADMIN_CHAT_ID,
+        logger_instance=None
+    )
 
     os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = GOOGLE_APPLICATION_CREDENTIALS
 

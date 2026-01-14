@@ -13,6 +13,7 @@ from aiogram.filters import Command
 from settings import (
     TELEGRAM_TOKEN,
     GOOGLE_APPLICATION_CREDENTIALS,
+    ADMIN_CHAT_ID,
 )
 import tg_handlers as tg_h
 from logger import setup_logging
@@ -22,8 +23,12 @@ logger = logging.getLogger(__name__)
 
 
 async def main():
-    setup_logging()
-    
+    setup_logging(
+        telegram_token=TELEGRAM_TOKEN,
+        admin_chat_id=ADMIN_CHAT_ID,
+        logger_instance=None
+    )
+
     os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = GOOGLE_APPLICATION_CREDENTIALS
 
     bot = Bot(token=TELEGRAM_TOKEN)

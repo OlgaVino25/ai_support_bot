@@ -1,7 +1,6 @@
 import logging
 import traceback
 import requests
-from settings import TELEGRAM_TOKEN, ADMIN_CHAT_ID
 
 
 logger = logging.getLogger("app_logger")
@@ -9,11 +8,16 @@ logger = logging.getLogger("app_logger")
 
 class TelegramErrorsHandler(logging.Handler):
 
+    def __init__(self, telegram_token, admin_chat_id):
+        super().__init__()
+        self.telegram_token = telegram_token
+        self.admin_chat_id = admin_chat_id
+
     def emit(self, record):
         if record.levelno < logging.WARNING:
             return
 
-        if not TELEGRAM_TOKEN or not ADMIN_CHAT_ID:
+        if not self.telegram_token or not self.admin_chat_id:
             return
 
         try:
@@ -40,9 +44,9 @@ class TelegramErrorsHandler(logging.Handler):
 
     def _send_to_telegram(self, msg):
         """Синхронная отправка сообщения через Telegram Bot API"""
-        url = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage"
+        url = f"https://api.telegram.org/bot{self.telegram_token}/sendMessage"
 
-        payload = {"chat_id": ADMIN_CHAT_ID, "text": msg}
+        payload = {"chat_id": self.admin_chat_id, "text": msg}
         try:
             response = requests.post(url, json=payload, timeout=10)
             if response.status_code != 200:
@@ -51,10 +55,12 @@ class TelegramErrorsHandler(logging.Handler):
             print(f"❌ Не удалось отправить сообщение в Telegram: {e}")
 
 
-def setup_logging(logger_instance=None):
+def setup_logging(telegram_token=None, admin_chat_id=None, logger_instance=None):
     """Настраивает логирование.
 
     Args:
+        telegram_token: Токен Telegram бота для отправки ошибок. Если None, то Telegram логгер не добавляется.
+        admin_chat_id: ID чата для отправки ошибок. Если None, то Telegram логгер не добавляется.
         logger_instance: Логгер для настройки. Если None, настраивается корневой логгер.
     """
     if logger_instance is None:
@@ -72,8 +78,8 @@ def setup_logging(logger_instance=None):
     console_handler.setFormatter(console_format)
     logger_instance.addHandler(console_handler)
 
-    if TELEGRAM_TOKEN and ADMIN_CHAT_ID:
-        telegram_handler = TelegramErrorsHandler()
+    if telegram_token and admin_chat_id:
+        telegram_handler = TelegramErrorsHandler(telegram_token, admin_chat_id)
         telegram_handler.setLevel(logging.WARNING)
         logger_instance.addHandler(telegram_handler)
 
