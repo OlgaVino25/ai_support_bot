@@ -56,5 +56,4 @@ async def main():
 
 
 if __name__ == "__main__":
-    logger.info("Бот запущен")
     asyncio.run(main())

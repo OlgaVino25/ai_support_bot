@@ -100,8 +100,6 @@ def list_intents(project_id):
     return intents_list
 
 
-
-
 async def main():
 
     setup_logging(
@@ -154,10 +152,4 @@ async def main():
 
 
 if __name__ == "__main__":
-    try:
-        asyncio.run(main())
-    except KeyboardInterrupt:
-        print("\nСкрипт остановлен пользователем (Ctrl+C)")
-    except Exception as e:
-        print(f"Непредвиденная ошибка: {e}")
-        raise
+    asyncio.run(main())
