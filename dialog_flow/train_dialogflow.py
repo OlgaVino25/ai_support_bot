@@ -1,5 +1,6 @@
 import os
 import sys
+import logging
 from pathlib import Path
 
 BASE_DIR = Path(__file__).parent.parent
@@ -14,35 +15,43 @@ from settings import (
     PROJECT_ID,
     GOOGLE_APPLICATION_CREDENTIALS,
 )
+from logger import setup_logging
+
+
+logger = logging.getLogger(__name__)
 
 
 async def create_intent(
     project_id, display_name, training_phrases_parts, message_texts
 ):
-    intents_client = dialogflow.IntentsClient()
-    parent = dialogflow.AgentsClient.agent_path(project_id)
+    try:
+        intents_client = dialogflow.IntentsClient()
+        parent = dialogflow.AgentsClient.agent_path(project_id)
 
-    training_phrases = []
-    for training_phrases_part in training_phrases_parts:
-        part = dialogflow.Intent.TrainingPhrase.Part(text=training_phrases_part)
-        training_phrase = dialogflow.Intent.TrainingPhrase(parts=[part])
-        training_phrases.append(training_phrase)
+        training_phrases = []
+        for training_phrases_part in training_phrases_parts:
+            part = dialogflow.Intent.TrainingPhrase.Part(text=training_phrases_part)
+            training_phrase = dialogflow.Intent.TrainingPhrase(parts=[part])
+            training_phrases.append(training_phrase)
 
-    text = dialogflow.Intent.Message.Text(text=message_texts)
-    message = dialogflow.Intent.Message(text=text)
+        text = dialogflow.Intent.Message.Text(text=message_texts)
+        message = dialogflow.Intent.Message(text=text)
 
-    intent = dialogflow.Intent(
-        display_name=display_name,
-        training_phrases=training_phrases,
-        messages=[message],
-    )
+        intent = dialogflow.Intent(
+            display_name=display_name,
+            training_phrases=training_phrases,
+            messages=[message],
+        )
 
-    response = intents_client.create_intent(
-        request={"parent": parent, "intent": intent}
-    )
+        response = intents_client.create_intent(
+            request={"parent": parent, "intent": intent}
+        )
 
-    print(f"Создан интент: {display_name}")
-    return True
+        logger.info(f"Создан интент: {display_name}")
+        return True
+    except Exception as e:
+        logger.error(f"Ошибка при создании интента {display_name}: {e}")
+        raise
 
 
 async def train_from_json():
@@ -51,27 +60,32 @@ async def train_from_json():
         with open(PHRASES_PATH, "r", encoding="UTF-8") as file:
             intents_data = json.load(file)
 
+        logger.info(f"Начинаю обучение DialogFlow из файла: {PHRASES_PATH}")
+
         for display_name, data in intents_data.items():
             questions = data["questions"]
             answer = data["answer"]
 
-            print(f"Создаю интент: {display_name}")
+            logger.info(f"Создаю интент: {display_name}")
             await create_intent(
                 project_id=PROJECT_ID,
                 display_name=display_name,
                 training_phrases_parts=questions,
                 message_texts=[answer],
             )
-            print(f"Интент '{display_name}' успешно создан\n")
+            logger.info(f"Интент '{display_name}' успешно создан\n")
 
-        print("Обучение DialogFlow завершено!")
+        logger.info("Обучение DialogFlow завершено!")
 
     except FileNotFoundError:
-        print("Ошибка: файл phrases.json не найден")
+        logger.error(f"Файл не найден: {PHRASES_PATH}")
+        raise
     except KeyError as e:
-        print(f"Ошибка в структуре JSON: отсутствует ключ {e}")
+        logger.error(f"Ошибка в структуре JSON: отсутствует ключ {e}")
+        raise
     except Exception as e:
-        print(f"Произошла ошибка: {e}")
+        logger.error(f"Произошла ошибка при обучении: {e}")
+        raise
 
 
 def list_intents():
@@ -82,30 +96,56 @@ def list_intents():
 
         intents = intents_client.list_intents(request={"parent": parent})
 
-        print("Существующие интенты:")
-        print("=" * 50)
+        logger.info("Существующие интенты:")
+        logger.info("=" * 50)
+
+        intent_count = 0
         for intent in intents:
-            print(f"Имя: {intent.display_name}")
-            print(f"ID: {intent.name}")
-            print(f"Количество тренировочных фраз: {len(intent.training_phrases)}")
-            print("-" * 30)
+            logger.info(f"Имя: {intent.display_name}")
+            logger.info(f"ID: {intent.name}")
+            logger.info(
+                f"Количество тренировочных фраз: {len(intent.training_phrases)}"
+            )
+            logger.info("-" * 30)
+            intent_count += 1
+
+        logger.info(f"Всего интентов: {intent_count}")
+        return intent_count
     except Exception as e:
-        print(f"Ошибка при получении списка интентов: {e}")
+        logger.error(f"Ошибка при получении списка интентов: {e}")
+        raise
 
 
-if __name__ == "__main__":
+async def main():
+
+    setup_logging()
+
     os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = GOOGLE_APPLICATION_CREDENTIALS
 
-    print("Текущие интенты в DialogFlow:")
+    logger.info("Скрипт train_dialogflow запущен")
+
+    logger.info("Текущие интенты в DialogFlow:")
     list_intents()
-    print("\n" + "=" * 50 + "\n")
+    logger.info("=" * 50)
 
     response = input(
         "Хотите обучить DialogFlow новым интентам из phrases.json? (y/n): "
     )
 
+    logger.info(f"Пользовательский выбор: {response}")
+
     if response.lower() == "y":
-        print("\nНачинаю обучение DialogFlow...")
-        asyncio.run(train_from_json())
+        logger.info("Начинаю обучение DialogFlow...")
+        await train_from_json()
     else:
-        print("Обучение отменено.")
+        logger.info("Обучение отменено пользователем.")
+
+
+if __name__ == "__main__":
+    try:
+        asyncio.run(main())
+    except KeyboardInterrupt:
+        logger.info("Скрипт остановлен пользователем (Ctrl+C)")
+    except Exception as e:
+        logger.exception("Непредвиденная ошибка при выполнении скрипта")
+        raise

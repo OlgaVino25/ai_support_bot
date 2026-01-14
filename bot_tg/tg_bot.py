@@ -1,5 +1,6 @@
 import os
 import sys
+import logging
 from pathlib import Path
 
 BASE_DIR = Path(__file__).parent.parent
@@ -14,10 +15,15 @@ from settings import (
     GOOGLE_APPLICATION_CREDENTIALS,
 )
 import tg_handlers as tg_h
-from logger import logger
+from logger import setup_logging
+
+
+logger = logging.getLogger(__name__)
 
 
 async def main():
+    setup_logging(logger)
+    
     os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = GOOGLE_APPLICATION_CREDENTIALS
 
     bot = Bot(token=TELEGRAM_TOKEN)
@@ -35,4 +41,3 @@ async def main():
 if __name__ == "__main__":
     logger.info("Бот запущен")
     asyncio.run(main())
-

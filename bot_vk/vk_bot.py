@@ -1,5 +1,6 @@
 import os
 import sys
+import logging
 from pathlib import Path
 
 BASE_DIR = Path(__file__).parent.parent
@@ -13,11 +14,14 @@ from settings import (
     GOOGLE_APPLICATION_CREDENTIALS,
 )
 import vk_handlers as vk_h
-from logger import logger
+from logger import setup_logging
+
+
+logger = logging.getLogger(__name__)
 
 
 if __name__ == "__main__":
-    logger.info("VK бот запущен")
+    setup_logging(logger)
 
     os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = GOOGLE_APPLICATION_CREDENTIALS
 

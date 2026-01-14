@@ -4,6 +4,9 @@ import requests
 from settings import TELEGRAM_TOKEN, ADMIN_CHAT_ID
 
 
+logger = logging.getLogger("app_logger")
+
+
 class TelegramErrorsHandler(logging.Handler):
 
     def emit(self, record):
@@ -48,17 +51,23 @@ class TelegramErrorsHandler(logging.Handler):
             print(f"❌ Не удалось отправить сообщение в Telegram: {e}")
 
 
-def setup_logging():
-    logger = logging.getLogger()
-    logger.setLevel(logging.DEBUG)
+def setup_logging(logger_instance=None):
+    """Настраивает логирование.
 
-    logger.handlers.clear()
+    Args:
+        logger_instance: Логгер для настройки. Если None, настраивается корневой логгер.
+    """
+    if logger_instance is None:
+        logger_instance = logging.getLogger()
+
+    logger_instance.setLevel(logging.DEBUG)
+    logger_instance.handlers.clear()
 
     # Для консоли
     console_handler = logging.StreamHandler()
     console_handler.setLevel(logging.DEBUG)
     console_format = logging.Formatter(
-        "%(asctime)s - %(process)d - %(levelname)s - %(pathname)s - %(lineno)d - %(message)s",
+        "%(name)s - %(asctime)s - %(process)d - %(levelname)s - %(pathname)s - %(lineno)d - %(message)s",
         datefmt="%H:%M:%S",
     )
     console_handler.setFormatter(console_format)
@@ -70,7 +79,4 @@ def setup_logging():
         telegram_handler.setLevel(logging.WARNING)
         logger.addHandler(telegram_handler)
 
-    return logger
-
-
-logger = setup_logging()
+    return logger_instance
