@@ -15,14 +15,14 @@ from settings import PROJECT_ID
 logger = logging.getLogger(__name__)
 
 
-def echo(event, vk_api):
+def echo(event, vk_api, project_id):
     """Обработка сообщений VK с использованием DialogFlow"""
     try:
         user_id = event.user_id if event.user_id != 0 else event.peer_id
         session_id = f"vk-{user_id}"
 
         session_client = dialogflow.SessionsClient()
-        session = session_client.session_path(PROJECT_ID, session_id)
+        session = session_client.session_path(project_id, session_id)
 
         text_input = dialogflow.TextInput(text=event.text, language_code="ru")
         query_input = dialogflow.QueryInput(text=text_input)

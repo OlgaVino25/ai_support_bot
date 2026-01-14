@@ -14,6 +14,7 @@ from settings import (
     GOOGLE_APPLICATION_CREDENTIALS,
     TELEGRAM_TOKEN,
     ADMIN_CHAT_ID,
+    PROJECT_ID,
 )
 import vk_handlers as vk_h
 from logger import setup_logging
@@ -39,7 +40,7 @@ def main():
         logger.info("VK бот запущен")
         for event in longpoll.listen():
             if event.type == VkEventType.MESSAGE_NEW and event.to_me:
-                vk_h.echo(event, vk_api)
+                vk_h.echo(event, vk_api, PROJECT_ID)
     except KeyboardInterrupt:
         logger.warning("VK бот остановлен пользователем (Ctrl+C)")
         print("\nVK бот остановлен")

@@ -56,10 +56,10 @@ async def create_intent(
         raise
 
 
-async def train_from_json():
+async def train_from_json(phrases_path, project_id):
     """Обучает DialogFlow из JSON файла."""
     try:
-        with open(PHRASES_PATH, "r", encoding="UTF-8") as file:
+        with open(phrases_path, "r", encoding="UTF-8") as file:
             intents_data = json.load(file)
 
         created_count = 0
@@ -70,7 +70,7 @@ async def train_from_json():
             answer = data["answer"]
 
             success = await create_intent(
-                project_id=PROJECT_ID,
+                project_id=project_id,
                 display_name=display_name,
                 training_phrases_parts=questions,
                 message_texts=[answer],
@@ -91,11 +91,11 @@ async def train_from_json():
         raise Exception(f"Произошла ошибка при обучении: {e}")
 
 
-def list_intents():
+def list_intents(project_id):
     """Выводит список существующих интентов."""
     try:
         intents_client = dialogflow.IntentsClient()
-        parent = dialogflow.AgentsClient.agent_path(PROJECT_ID)
+        parent = dialogflow.AgentsClient.agent_path(project_id)
 
         intents = intents_client.list_intents(request={"parent": parent})
 
@@ -132,7 +132,7 @@ async def main():
     print("=" * 50)
 
     try:
-        intents = list_intents()
+        intents = list_intents(project_id=PROJECT_ID)
         for intent in intents:
             print(f"Имя: {intent['name']}")
             print(f"ID: {intent['id']}")
@@ -149,7 +149,9 @@ async def main():
     print("\nНачинаю обучение DialogFlow...")
 
     try:
-        created_count, failed_count = await train_from_json()
+        created_count, failed_count = await train_from_json(
+            phrases_path=PHRASES_PATH, project_id=PROJECT_ID
+        )
 
         print("\n" + "=" * 50)
         print(f"Обучение DialogFlow завершено!")

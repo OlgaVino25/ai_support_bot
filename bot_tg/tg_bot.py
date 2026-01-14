@@ -14,12 +14,17 @@ from settings import (
     TELEGRAM_TOKEN,
     GOOGLE_APPLICATION_CREDENTIALS,
     ADMIN_CHAT_ID,
+    PROJECT_ID,
 )
 import tg_handlers as tg_h
 from logger import setup_logging
 
 
 logger = logging.getLogger(__name__)
+
+
+async def echo_wrapper(message):
+    await tg_h.echo(message, PROJECT_ID)
 
 
 async def main():
@@ -35,7 +40,7 @@ async def main():
     dp = Dispatcher()
 
     dp.message.register(tg_h.start, Command(commands=["start"]))
-    dp.message.register(tg_h.echo)
+    dp.message.register(echo_wrapper)
     try:
         await dp.start_polling(bot)
     except Exception as e:
