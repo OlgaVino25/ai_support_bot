@@ -23,10 +23,10 @@ from logger import setup_logging
 logger = logging.getLogger(__name__)
 
 
-def echo_with_error_handling(event, vk_api, project_id):
-    """Для обработки исключений в echo"""
+def handle_user_message_with_error_handling(event, vk_api, project_id):
+    """Для обработки исключений при обработке сообщений пользователя"""
     try:
-        vk_h.echo(event, vk_api, project_id)
+        vk_h.handle_user_message(event, vk_api, project_id)
     except Exception as err:
         logger.exception("Ошибка в VK обработчике")
 
@@ -46,7 +46,7 @@ def main():
         logger.info("VK бот запущен")
         for event in longpoll.listen():
             if event.type == VkEventType.MESSAGE_NEW and event.to_me:
-                echo_with_error_handling(event, vk_api, PROJECT_ID)
+                handle_user_message_with_error_handling(event, vk_api, PROJECT_ID)
     except KeyboardInterrupt:
         logger.warning("VK бот остановлен пользователем (Ctrl+C)")
         print("\nVK бот остановлен")

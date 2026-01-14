@@ -19,8 +19,8 @@ async def start(message: types.Message):
     )
 
 
-async def echo(message, project_id):
-
+async def handle_user_message(message, project_id):
+    """Обрабатывает сообщение пользователя через DialogFlow и отправляет ответ."""
     user_text = message.text
     user_id = message.from_user.id
 

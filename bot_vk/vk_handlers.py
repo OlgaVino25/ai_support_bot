@@ -13,8 +13,8 @@ from google.cloud import dialogflow
 logger = logging.getLogger(__name__)
 
 
-def echo(event, vk_api, project_id):
-    """Обработка сообщений VK с использованием DialogFlow"""
+def handle_user_message(event, vk_api, project_id):
+    """Обрабатывает сообщение пользователя через DialogFlow и отправляет ответ."""
     user_id = event.user_id if event.user_id != 0 else event.peer_id
     session_id = f"vk-{user_id}"
 

@@ -24,10 +24,10 @@ from logger import setup_logging
 logger = logging.getLogger(__name__)
 
 
-async def echo_with_error_handling(message, project_id):
-    """Для обработки исключений в echo"""
+async def handle_user_message_with_error_handling(message, project_id):
+    """Для обработки исключений при обработке сообщений пользователя"""
     try:
-        await tg_h.echo(message, project_id)
+        await tg_h.handle_user_message(message, project_id)
     except Exception as err:
         logger.exception("Ошибка в Telegram обработчике")
 
@@ -44,7 +44,9 @@ async def main():
 
     dp.message.register(tg_h.start, Command(commands=["start"]))
     dp.message.register(
-        functools.partial(echo_with_error_handling, project_id=PROJECT_ID)
+        functools.partial(
+            handle_user_message_with_error_handling, project_id=PROJECT_ID
+        )
     )
     try:
         await dp.start_polling(bot)
