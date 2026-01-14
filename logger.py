@@ -49,7 +49,7 @@ class TelegramErrorsHandler(logging.Handler):
         payload = {"chat_id": self.admin_chat_id, "text": msg}
         try:
             response = requests.post(url, json=payload, timeout=10)
-            if response.status_code != 200:
+            if not response.ok:
                 print(f"⚠️ Не удалось отправить сообщение в Telegram: {response.text}")
         except Exception as e:
             print(f"❌ Не удалось отправить сообщение в Telegram: {e}")
